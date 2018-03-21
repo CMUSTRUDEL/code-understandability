@@ -1,7 +1,8 @@
 require(glmnet)
 require(pROC)
 
-G = read.csv('understand.csv')
+
+G = read.csv('~/Downloads/understand.csv')
 G_scaled = G
 ind = sapply(G_scaled, is.numeric)
 G_scaled[ind] = lapply(G_scaled[ind], scale)
@@ -45,21 +46,21 @@ library(ggplot2)
 
 levels(G$JavaProfessional) = c("No", "Yes")
 ggplot(data=G, aes(x=G$AU, fill = factor(G$JavaProfessional, labels=list("No", "Yes")))) + geom_density(alpha=0.5) +
-	xlab("% Understood") + ylab("Density") + theme(axis.title = element_text(size = 26)) +
-	scale_fill_discrete(name=">5yrs Java Exp.") +
-	theme(legend.position = "bottom", legend.direction = "horizontal", legend.text=element_text(size=16), legend.title=element_text(size=16)) +
-	theme(
-		panel.grid.major = element_blank(), 
-		panel.grid.minor = element_blank(),
-		panel.background = element_rect(fill = "transparent",colour = NA),
-		#plot.background = element_rect(fill = "transparent",colour = NA)
-	) +
-	theme(axis.text=element_text(size=12),
-	axis.title.y=element_text(size=14,),
-	axis.title.x = element_text(size=14),
-	legend.title=element_text(size=14),
-	plot.title = element_text(size=16,hjust=1))
-	ggsave('UnderstandabilityPlot.png',width=8,height=5,units="in",bg = "transparent",dpi=300)
+  xlab("% Understood") + ylab("Density") + theme(axis.title = element_text(size = 26)) +
+  scale_fill_discrete(name=">5yrs Java Exp.") +
+  theme(legend.position = "bottom", legend.direction = "horizontal", legend.text=element_text(size=16), legend.title=element_text(size=16)) +
+  theme(
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "transparent",colour = NA),
+    #plot.background = element_rect(fill = "transparent",colour = NA)
+  ) +
+  theme(axis.text=element_text(size=12),
+        axis.title.y=element_text(size=14,),
+        axis.title.x = element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.title = element_text(size=16,hjust=1))
+ggsave('UnderstandabilityPlot.png',width=8,height=5,units="in",bg = "transparent",dpi=300)
 
 # PCA
 
@@ -92,14 +93,14 @@ G_scaled$JavaProfessional = G$JavaProfessional = factor(G$PE.spec..java. >= 5)
 # The model inspired by PCA
 require(lme4)
 lg.fit = glmer(Understood ~ 
-            Professional +
-            Cyclomatic.complexity + 
-            LOC + 
-            Volume + 
-            X.operators..avg. + 
-            Line.length..max. +
-            X.spaces..avg. + (1 | participant_id), data=G_scaled,  # Fitting on the scaled data
-            glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=1e5)), family = binomial(link="logit"))
+                 Professional +
+                 Cyclomatic.complexity + 
+                 LOC + 
+                 Volume + 
+                 X.operators..avg. + 
+                 Line.length..max. +
+                 X.spaces..avg. + (1 | participant_id), data=G_scaled,  # Fitting on the scaled data
+               glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=1e5)), family = binomial(link="logit"))
 
 summary(lg.fit)
 require(MuMIn)
@@ -112,8 +113,8 @@ terms = c("(1|participant_id)")
 bestTerms = c("(1|participant_id)")
 
 exclude = c("participant_id", "system_name", "snippet_signature", "developer_position", "AU", "Understood", "PBU", "TAU", "TNPU", "Identifiers.comments..area.", "Keywords.comments..area.",    "Numbers.comments..area.",     "Strings.comments..area.",    
-"Literals.comments..area.",    "Operators.comments..area.",   "Strings.numbers..area.",      "Literals.numbers..area.",    
- "Operators.numbers..area.",    "Literals.strings..area.", "Operators.strings..area.", "Operators.literals..area..1")
+            "Literals.comments..area.",    "Operators.comments..area.",   "Strings.numbers..area.",      "Literals.numbers..area.",    
+            "Operators.numbers..area.",    "Literals.strings..area.", "Operators.strings..area.", "Operators.literals..area..1")
 considering = setdiff(colnames(G), exclude)
 
 mer.formula = reformulate(terms, response="Understood")
@@ -180,22 +181,22 @@ b_par = bootMer(x=mer.best.fit, FUN=fixef, nsim=2000, parallel=c("multicore"), n
 b_par
 
 format.perc <- function(probs, digits) {
-    paste(format(100 * probs, trim = TRUE,
-                 scientific = FALSE, digits = digits),
-          "%")
+  paste(format(100 * probs, trim = TRUE,
+               scientific = FALSE, digits = digits),
+        "%")
 }
 
 bCI.tab <- function(b,ind=length(b$t0), type="perc", conf=0.95) {
-    btab0 <- t(sapply(as.list(seq(ind)),
+  btab0 <- t(sapply(as.list(seq(ind)),
                     function(i)
-                    boot.ci(b,index=i,conf=conf, type=type)$percent))
-    btab <- btab0[,4:5]
-    rownames(btab) <- names(b$t0)
-    a <- (1 - conf)/2
-    a <- c(a, 1 - a)
-    pct <- format.perc(a, 3)
-    colnames(btab) <- pct
-    return(btab)
+                      boot.ci(b,index=i,conf=conf, type=type)$percent))
+  btab <- btab0[,4:5]
+  rownames(btab) <- names(b$t0)
+  a <- (1 - conf)/2
+  a <- c(a, 1 - a)
+  pct <- format.perc(a, 3)
+  colnames(btab) <- pct
+  return(btab)
 }
 
 
@@ -221,13 +222,23 @@ stopCluster(cl)
 ignore2 = colnames(G)[colSums(is.na(G)) > 0]
 ignore2 = c(ignore2, c("participant_id", "system_name", "snippet_signature", "developer_position", "AU", "Understood", "JavaProfessional", "Professional", "PBU", "TAU", "TNPU", "PE.gen", "PE.spec..java."))
 
-# Will just say that they understood it if they passed (got a 0.666 or more)
+# Will say that they understood it if they passed (got a 0.666 or more)
 y = factor(G$AU > 0.6)
 x = scale(G[, !(names(G) %in% ignore2)])
 
+# Dummy variables for glmnet
+d_prof = as.matrix(as.numeric(G$PE.gen >= 5))
+d_java = as.matrix(as.numeric(G$PE.spec..java. >= 5))
+colnames(d_prof) = c("Professional")
+colnames(d_java) = c("JavaProfessional")
+
+x = cbind(x, d_prof)
+x = cbind(x, d_java)
+
+
 # Dummy variables required by glmnet
-x = cbind(x, model.matrix(~ Professional - 1, data=G))
-x = cbind(x, model.matrix(~ JavaProfessional - 1, data=G))
+#x = cbind(x, model.matrix(~ Professional - 1, data=G))
+#x = cbind(x, model.matrix(~ JavaProfessional - 1, data=G))
 
 colnames(x)
 
@@ -238,13 +249,13 @@ aucs = c()
 kept = c()
 
 # Change to 5000, but 1000 should be sufficient for replication of our result
-for(i in 1:1000) {
-  train = sample(1:nrow(G), nrow(G) * 0.75) # Use 75% of the data for training
-  test = (-train) # The other 25% for testing
-      
+for(i in 1:5000) {
+  train = sample(1:nrow(G), nrow(G) * 0.75)
+  test = (-train)
+  
   grid = 10^seq(10,-2,length=100)
   
-  cv.out = cv.glmnet(as.matrix(x[train,]), y[train], alpha=1, nfold = 10, family = "binomial") # Find an optimal tuning parameter
+  cv.out = cv.glmnet(as.matrix(x[train,]), y[train], alpha=1, nfold = 10, family = "binomial")
   bestlam = cv.out$lambda.min
   
   out = glmnet(as.matrix(x)[train,], y[train], alpha=1, lambda=grid, family="binomial")
@@ -264,6 +275,7 @@ for(i in 1:1000) {
     res = ret
   }
 }
+
 
 sps = seq(0, 1, 0.025)
 quantiles = apply(res, 2, function(x) quantile(x, probs=c(0.025, 0.975)))
@@ -288,12 +300,12 @@ df = data.frame(sps=sps, sens=means, lower=lower, upper=upper)
 ggplot(df, aes(x=(1-sps), y=sens)) + geom_ribbon(aes(ymin=lower, ymax=upper), fill="grey90") +
   theme_bw() +
   theme(legend.position = c(0.4, 0.2), 
-  legend.direction="horizontal",
-  axis.line = element_line(colour = "black"),
-  panel.grid.major = element_blank(),
-  panel.grid.minor = element_blank(),
-  panel.border = element_blank(),
-  panel.background = element_blank()) +
+        legend.direction="horizontal",
+        axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank()) +
   ggtitle("Understood Average ROC") +
   geom_line(color="steelblue", size=1.2) +
   geom_abline(slope=1, intercept=0, size=1) +
@@ -301,15 +313,15 @@ ggplot(df, aes(x=(1-sps), y=sens)) + geom_ribbon(aes(ymin=lower, ymax=upper), fi
   theme(legend.position = "none") +
   theme_bw() +
   theme(legend.position = c(0.7, 0.9),
-  legend.direction="horizontal",
-  axis.line = element_line(colour = "black"),
-  panel.grid.major = element_blank(),
-  panel.grid.minor = element_blank(),
-  panel.border = element_blank(),
-  panel.background = element_blank()) +
+        legend.direction="horizontal",
+        axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank()) +
   theme(axis.text=element_text(size=12),
-  axis.title=element_text(size=14),
-  plot.title = element_text(size=16,hjust=1))
+        axis.title=element_text(size=14),
+        plot.title = element_text(size=16,hjust=1))
 
 # The variables retained in the model can be found in the variable `kept`
 # We split this at "(Intercept)" to find the percentage occurrence
